@@ -14,7 +14,7 @@ export class AuthService {
     async signIn(
         username: string,
         password: string,
-    ): Promise<{ access_token: string, requiresPasswordReset: boolean, mail: string } | { requiresPasswordReset: boolean, message: string }> {
+    ): Promise<{ access_token: string, requiresPasswordReset: boolean, mail: string,message:string } | { requiresPasswordReset: boolean, message: string }> {
         const user = await this.usersService.getUserPass(username);
         const passwordMatch = await bcrypt.compare(password, user?.UserPassword);
         if (!passwordMatch) {
@@ -24,7 +24,8 @@ export class AuthService {
         return {
             access_token: await this.jwtService.signAsync(payload),
             requiresPasswordReset: user.dataValues.ForcePasswordReset,
-            mail: user.dataValues.EmailId
+            mail: user.dataValues.EmailId,
+            message:"success"
         };
     }
 }

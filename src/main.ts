@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { Request, Response, NextFunction  } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import configurations from "./config"
 import * as cookieParser from 'cookie-parser';
 
@@ -12,14 +12,22 @@ async function bootstrap() {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
       next();
     });
+    app.enableCors({
+      origin: '*',
+      credentials: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      allowedHeaders: 'Content-Type,Authorization',
+    });
+  } else {
+    app.enableCors({
+      origin: configurations.FRONTEND_URL,
+      credentials: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      allowedHeaders: 'Content-Type,Authorization',
+    });
   }
   app.use(cookieParser());
-  app.enableCors({
-    origin: '*',
-    credentials: true,              
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
-  });
+
   app.setGlobalPrefix('api')
   const config = new DocumentBuilder()
     .setTitle('User Management API')
@@ -28,7 +36,7 @@ async function bootstrap() {
     .addTag('user')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
-  await app.listen(configurations.APP_PORT ?? 3000, '0.0.0.0');
+  SwaggerModule.setup('api/docs', app, documentFactory);
+  await app.listen(configurations.APP_PORT, '0.0.0.0');
 }
 bootstrap();
