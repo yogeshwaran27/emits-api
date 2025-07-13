@@ -1,45 +1,55 @@
-import {
-  Table, Column, Model, DataType, PrimaryKey, ForeignKey,
-} from 'sequelize-typescript';
-import { Company } from './company.entity';
+import { Column, Model, Table, DataType } from 'sequelize-typescript';
 
-@Table({ tableName: 'Users', schema: 'Prod', timestamps: false })
-export class User extends Model<User> {
-  @PrimaryKey
-  @Column
-  UserId: string;
+@Table({ tableName: 'UserDetails', schema: 'Prod', timestamps: false  })
+export class UserDetails extends Model<UserDetails> {
+  @Column({ type: DataType.STRING, primaryKey: true })
+  declare UserId: string;
 
-  @ForeignKey(() => Company)
-  @Column
-  CompanyId: string;
+  @Column(DataType.STRING)
+  declare CompanyId: string;
 
-  @Column
-  UserType: 'Administrator' | 'Employee';
+  @Column(DataType.STRING)
+  declare UserType: string;
 
-  @Column
-  UserName: string;
+  @Column(DataType.STRING)
+  declare UserName: string;
 
-  @Column
-  UserPassword: string;
+  @Column(DataType.STRING)
+  declare EmailId: string;
 
-  @Column
-  UserStatus: 'Active' | 'Inactive';
+  @Column(DataType.BOOLEAN)
+  declare EmailVerified: boolean;
 
-  @Column
-  FirstName: string;
+  @Column(DataType.STRING)
+  declare PhoneNumber: string;
 
-  @Column
-  LastName: string;
+  @Column(DataType.BOOLEAN)
+  declare PhoneVerified: boolean;
 
-  @Column
-  CreatedBy: string;
+  @Column(DataType.STRING)
+  declare UserPassword: string;
 
-  @Column({ type: DataType.DATE })
-  CreatedDateTime: Date;
+  @Column(DataType.STRING)
+  declare UserStatus: string;
 
-  @Column
-  ModifiedBy: string;
+  @Column(DataType.STRING)
+  declare FirstName: string;
 
-  @Column({ type: DataType.DATE })
-  ModifiedDateTime: Date;
+  @Column(DataType.STRING)
+  declare LastName: string;
+
+  @Column(DataType.STRING)
+  declare CreatedBy: string;
+
+  @Column(DataType.DATE)
+  declare CreatedDateTime: Date;
+
+  @Column(DataType.STRING)
+  declare ModifiedBy: string;
+
+  @Column(DataType.DATE)
+  declare ModifiedDateTime: Date;
+
+  @Column(DataType.BOOLEAN)
+  declare ForcePasswordReset: boolean;
 }

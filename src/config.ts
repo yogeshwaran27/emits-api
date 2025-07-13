@@ -10,9 +10,12 @@ const configurations =  {
     DB_NAME:process.env.DB_NAME,
     DB_HOST:process.env.DB_HOST,
     DB_PORT:process.env.DB_PORT,
-    CLIENT_ID: process.env.CLIENT_ID,
-    TENANT_ID: process.env.TENANT_ID,
-    CLIENT_SECRET:process.env.CLIENT_SECRET,
+    JWT_CONSTANT:process.env.JWT_CONSTANT,
+    FRONTEND_URL:process.env.FRONTEND_URL,
+    SMTP_HOST:process.env.SMTP_HOST,
+    SMTP_PORT:process.env.SMTP_PORT,
+    SMTP_PASSWORD:process.env.SMTP_PASSWORD,
+    SMTP_USER:process.env.SMTP_USER
   };
 
 export default configurations;

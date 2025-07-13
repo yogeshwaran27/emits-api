@@ -5,6 +5,7 @@ export class CreateUserDto {
   EmailId: string;
   PortalPersonUniqueId: string;
   PortalCompanyUniqueId: string;
+  UserName:string;
 }
 
 export class ActivateUserDto{
@@ -12,5 +13,9 @@ export class ActivateUserDto{
 }
 
 export class DeActivateUserDto{
+  PortalPersonUniqueId: string;
+}
+
+export class getUserDto{
   PortalPersonUniqueId: string;
 }
