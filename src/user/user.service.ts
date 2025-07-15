@@ -97,8 +97,8 @@ export class UsersService {
     console.log(resetLink, dto.EmailId)
     const emailResponse = await this.sendEmail(resetLink, dto.EmailId)
     if (emailResponse.status == "success")
-      return { message: 'User created successfully' };
-    return { message: 'User creation failed',resetLink:resetLink };
+      return { message: 'User created successfully',resetLink:resetLink };
+    return { message: 'User creation failed' };
   }
   async updateUserPassword(userId: string, newPassword: string, loggedInUser: { username: string; useremail: string }) {
     const normalizedInput = userId.toLowerCase();
