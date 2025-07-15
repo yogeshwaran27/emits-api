@@ -9,7 +9,7 @@ import { Op, Sequelize as SequelizeLib } from 'sequelize';
 import { randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import configurations from 'src/config';
-
+import * as os from 'os';
 @Injectable()
 export class UsersService {
   constructor(
@@ -17,6 +17,24 @@ export class UsersService {
     @InjectModel(Company) private companyModel: typeof Company,
     private jwtService: JwtService
   ) { }
+
+
+
+  async getHostIp(): Promise<{ip:string }|null> {
+    const interfaces = os.networkInterfaces();
+
+    for (const name of Object.keys(interfaces)) {
+      for (const net of interfaces[name] || []) {
+        // Skip over internal (i.e., 127.0.0.1) and non-IPv4 addresses
+        if (net.family === 'IPv4' && !net.internal) {
+          return {ip:net.address};
+        }
+      }
+    }
+
+    return null;
+  }
+
   async sendEmail(resetLink: string, EmailId: string): Promise<{ status: string; message: string }> {
     return { status: 'success', message: 'Email sent successfully' };
     const payload = {
@@ -91,13 +109,13 @@ export class UsersService {
     } as any);
     const payload = { sub: userId, username: dto.UserName, useremail: dto.EmailId, phone: dto.PhoneNumber, companyId: companyId, UserType: 'Employee' };
     const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1d' })
-
-    const resetLink = `${configurations.FRONTEND_URL}/first-reset-pass?token=${access_token}&email=${dto.EmailId}`;
+    const ip =await this.getHostIp();
+    const resetLink = `http://${ip?.ip}/first-reset-pass?token=${access_token}&email=${dto.EmailId}`;
 
     console.log(resetLink, dto.EmailId)
     const emailResponse = await this.sendEmail(resetLink, dto.EmailId)
     if (emailResponse.status == "success")
-      return { message: 'User created successfully',resetLink:resetLink };
+      return { message: 'User created successfully', resetLink: resetLink };
     return { message: 'User creation failed' };
   }
   async updateUserPassword(userId: string, newPassword: string, loggedInUser: { username: string; useremail: string }) {
@@ -139,7 +157,7 @@ export class UsersService {
       ForcePasswordReset: false,
       ModifiedBy: 'SalesForce',
       ModifiedDateTime: Sequelize.literal('GETDATE()'),
-      EmailVerified:true
+      EmailVerified: true
     });
 
     return {

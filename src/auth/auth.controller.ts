@@ -44,4 +44,32 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 
+  @Post('reset-token-store')
+  @HttpCode(HttpStatus.OK)
+  async setResetToken(
+    @Body() tokenDto: Record<string, any>,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (tokenDto.token && tokenDto.email) {
+      res.cookie('access_token', tokenDto.token, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: configurations.NODE_ENV=="production",
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
+      res.cookie('mail', tokenDto.email, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: configurations.NODE_ENV=="production",
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
+
+      return {"message":"success"};
+    } else {
+      return {"message":"fail"}
+    }
+  }
+
 }
