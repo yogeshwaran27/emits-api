@@ -1,4 +1,3 @@
-// roles.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -16,14 +15,15 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-   
+
     if (!requiredRoles || requiredRoles.length === 0) {
-      return true; 
+      return true; // No roles required
     }
 
     const request = context.switchToHttp().getRequest();
-    const user = request.user.UserType;
-    if (!user || !requiredRoles.includes(user)) {
+    const user = request.user;
+
+    if (!user || !requiredRoles.includes(user.UserType)) {
       throw new ForbiddenException('Access denied: insufficient role');
     }
 

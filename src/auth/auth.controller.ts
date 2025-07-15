@@ -1,7 +1,8 @@
-import { Body, Controller, Post, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, Res, HttpCode, HttpStatus, Get, UseGuards, Req } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import configurations from 'src/config';
+import { AuthGuard } from './auth.gaurd';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +24,13 @@ export class AuthController {
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
+      res.cookie('name', result.name, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: configurations.NODE_ENV=="production",
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
       res.cookie('mail', result.mail, {
         httpOnly: configurations.NODE_ENV=="production",
         secure: configurations.NODE_ENV=="production",
@@ -31,7 +39,7 @@ export class AuthController {
         path: '/',
       });
 
-      const { access_token, ...rest } = result;
+      const { access_token,mail,name, ...rest } = result;
       return rest;
     } else {
       return result;
@@ -65,11 +73,26 @@ export class AuthController {
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
-
+      res.cookie('name', tokenDto.name, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: configurations.NODE_ENV=="production",
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
       return {"message":"success"};
     } else {
       return {"message":"fail"}
     }
+  }
+
+  @Get('/me')
+  @UseGuards(AuthGuard)
+  getProfile(@Req() req) {
+    return {
+      mail: req.cookies.mail,
+      name: req.cookies.name,
+    };
   }
 
 }

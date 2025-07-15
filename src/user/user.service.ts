@@ -29,18 +29,7 @@ export class UsersService {
       }
       return null
     }
-    const interfaces = os.networkInterfaces();
-
-    for (const name of Object.keys(interfaces)) {
-      for (const net of interfaces[name] || []) {
-        // Skip over internal (i.e., 127.0.0.1) and non-IPv4 addresses
-        if (net.family === 'IPv4' && !net.internal) {
-          return { ip: net.address };
-        }
-      }
-    }
-
-    return null;
+    return {ip:"localhost:5173"}
   }
 
   async sendEmail(resetLink: string, EmailId: string): Promise<{ status: string; message: string }> {
@@ -118,7 +107,7 @@ export class UsersService {
     const payload = { sub: userId, username: dto.UserName, useremail: dto.EmailId, phone: dto.PhoneNumber, companyId: companyId, UserType: 'Employee' };
     const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1d' })
     const ip = await this.getHostIp();
-    const resetLink = `http://${ip?.ip}/first-reset-pass?token=${access_token}&email=${dto.EmailId}`;
+    const resetLink = `http://${ip?.ip}/first-reset-pass?token=${access_token}&email=${dto.EmailId}&name=${dto.FirstName}`;
 
     console.log(resetLink, dto.EmailId)
     const emailResponse = await this.sendEmail(resetLink, dto.EmailId)

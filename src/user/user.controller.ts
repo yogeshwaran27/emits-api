@@ -39,9 +39,9 @@ export class UsersController {
 
   @Put('reset-password')
   @UseGuards(AuthGuard,RolesGuard)
-  async resetPassword(@Body() body: { email: string; newPassword: string },@Request() req: any) {
+  async resetPassword(@Body() body: { newPassword: string },@Request() req: any) {
     const loggedInUser = req.user; 
     console.log(body,req.user)
-    return this.usersService.updateUserPassword(body.email, body.newPassword,loggedInUser);
+    return this.usersService.updateUserPassword(req.cookies.mail, body.newPassword,loggedInUser);
   }
 }

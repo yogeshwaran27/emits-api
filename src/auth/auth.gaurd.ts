@@ -1,4 +1,3 @@
-
 import {
   CanActivate,
   ExecutionContext,
@@ -14,27 +13,26 @@ export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const request = context.switchToHttp().getRequest<Request>();
+    const token = this.extractTokenFromCookies(request);
+
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('No access token found in cookies');
     }
+
     try {
-      const payload = await this.jwtService.verifyAsync(
-        token,
-        {
-          secret: configurations.JWT_CONSTANT
-        }
-      );
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: configurations.JWT_CONSTANT,
+      });
       request['user'] = payload;
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid or expired access token');
     }
+
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractTokenFromCookies(request: Request): string | undefined {
+    return request.cookies?.access_token;
   }
 }
