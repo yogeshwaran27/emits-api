@@ -19,21 +19,21 @@ export class AuthController {
     if ('access_token' in result) {
       res.cookie('access_token', result.access_token, {
         httpOnly: configurations.NODE_ENV=="production",
-        secure: configurations.NODE_ENV=="production",
+        secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
       res.cookie('name', result.name, {
         httpOnly: configurations.NODE_ENV=="production",
-        secure: configurations.NODE_ENV=="production",
+        secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
       res.cookie('mail', result.mail, {
         httpOnly: configurations.NODE_ENV=="production",
-        secure: configurations.NODE_ENV=="production",
+        secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
@@ -61,21 +61,21 @@ export class AuthController {
     if (tokenDto.token && tokenDto.email) {
       res.cookie('access_token', tokenDto.token, {
         httpOnly: configurations.NODE_ENV=="production",
-        secure: configurations.NODE_ENV=="production",
+        secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
       res.cookie('mail', tokenDto.email, {
         httpOnly: configurations.NODE_ENV=="production",
-        secure: configurations.NODE_ENV=="production",
+        secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
       res.cookie('name', tokenDto.name, {
         httpOnly: configurations.NODE_ENV=="production",
-        secure: configurations.NODE_ENV=="production",
+        secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
