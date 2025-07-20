@@ -61,15 +61,16 @@ export class UsersService {
       throw new InternalServerErrorException('Failed to trigger email API');
     }
   }
-  async createUser(dto: CreateUserDto) {
+  async createUser(dto: CreateUserDto, Usercompany: string) {
     const userId = dto.PortalPersonUniqueId;
     const companyId = dto.PortalCompanyUniqueId;
-    const company = await this.companyModel.findByPk(companyId);
-    if (!company) {
-      throw new BadRequestException(`Company with ID ${companyId} does not exist`);
+
+    if (Usercompany != companyId) {
+      throw new BadRequestException(`User doesn't have Enough permission to create user for Company : ${companyId}`);
+
     }
     const existingUserById = await this.userModel.findOne({
-      where: { UserId: userId },
+      where: { UserId: userId, CompanyId: Usercompany },
     });
 
     if (existingUserById) {
@@ -87,9 +88,10 @@ export class UsersService {
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(tempPassword, saltRounds);
+
     await this.userModel.create({
       UserId: userId,
-      CompanyId: companyId,
+      CompanyId: Usercompany,
       UserType: 'Employee',
       UserName: dto.UserName,
       EmailId: dto.EmailId,
@@ -111,16 +113,15 @@ export class UsersService {
     await this.resetTokenRepository.create({
       token,
       UserId: userId,
-      companyId: companyId,
+      companyId: Usercompany,
       EmailId: dto.EmailId,
-      expires_at: new Date(Date.now() + 15 * 60 * 1000),
+      expires_at: new Date(Date.now() + 3600 * 24 * 1000),
       used: false,
       created_at: new Date(),
     } as any);
 
     const resetLink = `http://${ip?.ip}/first-reset-pass?token=${token}`;
 
-    console.log(resetLink, dto.EmailId)
     const emailResponse = await this.sendEmail(resetLink, dto.EmailId)
     if (emailResponse.status == "success")
       return { message: 'User created successfully', resetLink: resetLink };
@@ -174,7 +175,7 @@ export class UsersService {
     };
   }
 
-  async getUserById(userId: string) {
+  async getUserById(userId: string,reqCompanyID:string) {
     const user = await this.userModel.findOne({
       where: { UserId: userId },
       attributes: [
@@ -191,6 +192,8 @@ export class UsersService {
     if (!user) {
       throw new Error(`User with ID ${userId} not found`);
     }
+    if (user.CompanyId != reqCompanyID)
+      throw new BadRequestException(`User doesn't have Enough permission to view details of users from the company : ${user.CompanyId}`);
 
     return user;
   }
@@ -230,12 +233,14 @@ export class UsersService {
     return user;
   }
 
-  async activateUser(portalPersonUniqueId: string) {
+  async activateUser(portalPersonUniqueId: string, reqCompanyID: string) {
     const user = await this.userModel.findOne({ where: { UserId: portalPersonUniqueId } });
 
     if (!user) {
       return { status: 'Failed', reasonForFailure: 'UserNotFound' };
     }
+    if (user.CompanyId != reqCompanyID)
+      throw new BadRequestException(`User doesn't have Enough permission to activate user from  : ${user.CompanyId}`);
 
     user.UserStatus = 'Active'; // or `user.isActive = true` depending on your model
     await user.update({ UserStatus: 'Active' });
@@ -246,12 +251,14 @@ export class UsersService {
     };
   }
 
-  async deactivateUser(portalPersonUniqueId: string) {
+  async deactivateUser(portalPersonUniqueId: string, reqCompanyID: string) {
     const user = await this.userModel.findOne({ where: { UserId: portalPersonUniqueId } });
 
     if (!user) {
       return { status: 'Failed', reasonForFailure: 'UserNotFound' };
     }
+    if (user.CompanyId != reqCompanyID)
+      throw new BadRequestException(`User doesn't have Enough permission to deactivate user from : ${user.CompanyId}`);
 
     user.UserStatus = 'Inactive';
     await user.update({ UserStatus: 'Inactive' });

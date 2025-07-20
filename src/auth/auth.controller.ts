@@ -45,8 +45,15 @@ export class AuthController {
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
+      res.cookie('companyURL', result.companyURL, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: false,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
 
-      const { access_token,mail,name, ...rest } = result;
+      const { access_token,mail,name,companyURL,company, ...rest } = result;
       return rest;
     } else {
       return result;
@@ -55,6 +62,9 @@ export class AuthController {
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('access_token');
+    res.clearCookie('name');
+    res.clearCookie('company');
+    res.clearCookie('companyURL');   
     res.clearCookie('mail'); 
     return { message: 'Logged out successfully' };
   }
@@ -95,6 +105,13 @@ export class AuthController {
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
+      res.cookie('companyURL', resetRecord.companyURL, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: false,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
       return {"message":"success",company:resetRecord.company};
     } else {
       return {"message":"fail"}
@@ -107,7 +124,8 @@ export class AuthController {
     return {
       mail: req.cookies.mail,
       name: req.cookies.name,
-      company: req.cookies.company
+      company: req.cookies.company,
+      companyURL:req.cookies.companyURL
     };
   }
 

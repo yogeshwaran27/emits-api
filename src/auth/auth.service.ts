@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { ResetTokens } from 'src/user/entities/reset.entity';
 import { InjectModel } from '@nestjs/sequelize';
+import { Company } from 'src/user/entities/company.entity';
+import { UserDetails } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -13,18 +15,24 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectModel(ResetTokens)
     private resetTokensModel: typeof ResetTokens,
+    @InjectModel(Company)
+    private CompanyModel: typeof Company,
+    @InjectModel(UserDetails)
+    private userModel: typeof UserDetails,
 
   ) { }
 
   async signIn(
     username: string,
     password: string,
-  ): Promise<{ access_token: string, requiresPasswordReset: boolean, mail: string, message: string, name: string, company: string } | { requiresPasswordReset: boolean, message: string }> {
+  ): Promise<{ access_token: string, requiresPasswordReset: boolean, mail: string, message: string, name: string, company: string,companyURL:string } | { requiresPasswordReset: boolean, message: string }> {
     const user = await this.usersService.getUserPass(username);
     const passwordMatch = await bcrypt.compare(password, user?.UserPassword);
     if (!passwordMatch) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Password did not match');
     }
+    const companyURL= await this.CompanyModel.findOne({ where: { CompanyId:user.dataValues.CompanyId } })
+
     const payload = { sub: user.dataValues.UserId, username: user.dataValues.UserName, useremail: user.dataValues.EmailId, phone: user.dataValues.PhoneNumber, companyId: user.dataValues.CompanyId, UserType: user.dataValues.UserType };
     return {
       access_token: await this.jwtService.signAsync(payload),
@@ -32,10 +40,11 @@ export class AuthService {
       mail: user.dataValues.EmailId,
       name: user.dataValues.FirstName,
       company: user.dataValues.CompanyId,
+      companyURL:companyURL?.dataValues.CompanyLogoUrl,
       message: "success"
     };
   }
-  async findByToken(token: string): Promise<{ access_token: string; mail: string; name: string; company: string }> {
+  async findByToken(token: string): Promise<{ access_token: string; mail: string; name: string; company: string; companyURL:string }> {
     const resetRecord = await this.resetTokensModel.findOne({ where: { token } });
 
     if (!resetRecord) {
@@ -55,10 +64,22 @@ export class AuthService {
       { where: { token } }
     );
 
-    const user = await this.usersService.getUserById(resetRecord.UserId);
+    const user = await this.userModel.findOne({
+      where: { UserId: resetRecord.UserId },
+      attributes: [
+        'UserId',
+        'CompanyId',
+        'UserName',
+        'EmailId',
+        'PhoneNumber',
+        'FirstName',
+        'LastName',
+      ],
+    });
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
+    const companyURL= await this.CompanyModel.findOne({ where: { CompanyId:user.dataValues.CompanyId } })
 
     const payload = {
       sub: user.dataValues.UserId,
@@ -67,6 +88,7 @@ export class AuthService {
       phone: user.dataValues.PhoneNumber,
       companyId: user.dataValues.CompanyId,
       UserType: user.dataValues.UserType,
+      companyURL:companyURL?.dataValues.CompanyLogoUrl
     };
 
     const access_token = await this.jwtService.signAsync(payload);
@@ -76,6 +98,7 @@ export class AuthService {
       mail: user.dataValues.EmailId,
       name: user.dataValues.FirstName,
       company: user.dataValues.CompanyId,
+      companyURL:companyURL? companyURL.dataValues.CompanyLogoUrl : ""
     };
   }
 
