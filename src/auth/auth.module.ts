@@ -5,6 +5,8 @@ import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import configurations from 'src/config';
+import { ResetTokens } from 'src/user/entities/reset.entity';
+import { SequelizeModule } from '@nestjs/sequelize';
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import configurations from 'src/config';
       secret: configurations.JWT_CONSTANT,
       signOptions: { expiresIn: '3600s' },
     }),
+    SequelizeModule.forFeature([ResetTokens]),
   ],
   providers: [AuthService],
   controllers: [AuthController],

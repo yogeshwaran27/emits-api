@@ -4,10 +4,11 @@ import { UsersController } from './user.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UserDetails } from './entities/user.entity';
 import { Company } from './entities/company.entity';
+import { ResetTokens } from './entities/reset.entity';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([UserDetails, Company],)
+    SequelizeModule.forFeature([UserDetails, Company, ResetTokens],)
   ],
   controllers: [UsersController],
   providers: [UsersService],

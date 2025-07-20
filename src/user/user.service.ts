@@ -10,10 +10,12 @@ import { randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import configurations from 'src/config';
 import * as os from 'os';
+import { ResetTokens } from './entities/reset.entity';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(UserDetails) private userModel: typeof UserDetails,
+    @InjectModel(ResetTokens) private resetTokenRepository: typeof ResetTokens,
     @InjectModel(Company) private companyModel: typeof Company,
     private jwtService: JwtService
   ) { }
@@ -29,7 +31,7 @@ export class UsersService {
       }
       return null
     }
-    return {ip:"localhost:5173"}
+    return { ip: "localhost:5173" }
   }
 
   async sendEmail(resetLink: string, EmailId: string): Promise<{ status: string; message: string }> {
@@ -104,10 +106,19 @@ export class UsersService {
       ModifiedDateTime: Sequelize.literal('GETDATE()'),
       ForcePasswordReset: true,
     } as any);
-    const payload = { sub: userId, username: dto.UserName, useremail: dto.EmailId, phone: dto.PhoneNumber, companyId: companyId, UserType: 'Employee' };
-    const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1d' })
     const ip = await this.getHostIp();
-    const resetLink = `http://${ip?.ip}/first-reset-pass?token=${access_token}&email=${dto.EmailId}&name=${dto.FirstName}`;
+    const token = randomBytes(32).toString('hex');
+    await this.resetTokenRepository.create({
+      token,
+      UserId: userId,
+      companyId: companyId,
+      EmailId: dto.EmailId,
+      expires_at: new Date(Date.now() + 15 * 60 * 1000),
+      used: false,
+      created_at: new Date(),
+    } as any);
+
+    const resetLink = `http://${ip?.ip}/first-reset-pass?token=${token}`;
 
     console.log(resetLink, dto.EmailId)
     const emailResponse = await this.sendEmail(resetLink, dto.EmailId)
@@ -178,7 +189,7 @@ export class UsersService {
     });
 
     if (!user) {
-      return { error: `User with ID ${userId} not found` };
+      throw new Error(`User with ID ${userId} not found`);
     }
 
     return user;

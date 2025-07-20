@@ -38,6 +38,13 @@ export class AuthController {
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
+      res.cookie('company', result.company, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: false,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
 
       const { access_token,mail,name, ...rest } = result;
       return rest;
@@ -58,29 +65,37 @@ export class AuthController {
     @Body() tokenDto: Record<string, any>,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (tokenDto.token && tokenDto.email) {
-      res.cookie('access_token', tokenDto.token, {
+    if (tokenDto.token) {
+      const resetRecord = await this.authService.findByToken(tokenDto.token);
+      res.cookie('access_token', resetRecord.access_token, {
         httpOnly: configurations.NODE_ENV=="production",
         secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
-      res.cookie('mail', tokenDto.email, {
+      res.cookie('mail', resetRecord.mail, {
         httpOnly: configurations.NODE_ENV=="production",
         secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
-      res.cookie('name', tokenDto.name, {
+      res.cookie('name', resetRecord.name, {
         httpOnly: configurations.NODE_ENV=="production",
         secure: false,
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
         path: '/',
       });
-      return {"message":"success"};
+      res.cookie('company', resetRecord.company, {
+        httpOnly: configurations.NODE_ENV=="production",
+        secure: false,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
+      return {"message":"success",company:resetRecord.company};
     } else {
       return {"message":"fail"}
     }
@@ -92,6 +107,7 @@ export class AuthController {
     return {
       mail: req.cookies.mail,
       name: req.cookies.name,
+      company: req.cookies.company
     };
   }
 
