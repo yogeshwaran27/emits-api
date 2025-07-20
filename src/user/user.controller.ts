@@ -21,7 +21,7 @@ export class UsersController {
   @UseGuards(AuthGuard,RolesGuard)
   @Roles('SalesForce')
   async create(@Body() createUserDto: CreateUserDto,@Request() req: any) {
-    return this.usersService.createUser(createUserDto,req.cookies.company);
+    return this.usersService.createUser(createUserDto,req.cookies.company,req.hostname);
   }
   
   @Post('activate')

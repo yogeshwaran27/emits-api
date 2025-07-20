@@ -22,16 +22,11 @@ export class UsersService {
 
 
 
-  async getHostIp(): Promise<{ ip: string } | null> {
+  async getHostIp(hostname:string): Promise<{ ip: string } | null> {
     if (configurations.NODE_ENV == "production") {
-      const result = await fetch("http://checkip.amazonaws.com");
-      if (result.status === 200) {
-        const ip = (await result.text()).trim();
-        return { ip };
-      }
-      return null
+      return {ip:"http://"+hostname}
     }
-    return { ip: "localhost:5173" }
+    return { ip: "http://localhost:5173" }
   }
 
   async sendEmail(resetLink: string, EmailId: string): Promise<{ status: string; message: string }> {
@@ -61,7 +56,7 @@ export class UsersService {
       throw new InternalServerErrorException('Failed to trigger email API');
     }
   }
-  async createUser(dto: CreateUserDto, Usercompany: string) {
+  async createUser(dto: CreateUserDto, Usercompany: string, hostname: string) {
     const userId = dto.PortalPersonUniqueId;
     const companyId = dto.PortalCompanyUniqueId;
 
@@ -108,7 +103,7 @@ export class UsersService {
       ModifiedDateTime: Sequelize.literal('GETDATE()'),
       ForcePasswordReset: true,
     } as any);
-    const ip = await this.getHostIp();
+    const ip = await this.getHostIp(hostname);
     const token = randomBytes(32).toString('hex');
     await this.resetTokenRepository.create({
       token,
@@ -120,7 +115,7 @@ export class UsersService {
       created_at: new Date(),
     } as any);
 
-    const resetLink = `http://${ip?.ip}/first-reset-pass?token=${token}`;
+    const resetLink = `${ip?.ip}/first-reset-pass?token=${token}`;
 
     const emailResponse = await this.sendEmail(resetLink, dto.EmailId)
     if (emailResponse.status == "success")
