@@ -8,6 +8,8 @@ export class CreateUserDto {
   UserName:string;
 }
 
+export class ResetPasswordDto{ newPassword: string;firstTimeReset:boolean;oldPassword?:string }
+
 export class ActivateUserDto{
   PortalPersonUniqueId: string;
 }

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Put, Query, UseGuards,Request, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './user.service';
-import { CreateUserDto,DeActivateUserDto,ActivateUserDto, getUserDto } from './dto/create-user.dto';
+import { CreateUserDto,DeActivateUserDto,ActivateUserDto, getUserDto, ResetPasswordDto } from './dto/create-user.dto';
 import { AuthGuard } from 'src/auth/auth.gaurd';
 import { RolesGuard } from 'src/roles/roles.gaurd';
 import { Roles } from 'src/roles/roles.decorator';
@@ -40,15 +40,15 @@ export class UsersController {
 
   @Put('reset-password')
   @UseGuards(AuthGuard,RolesGuard)
-  async resetPassword(@Body() body: { newPassword: string,firstTimeReset:boolean,oldPassword?:string },@Request() req: any) {
-    if(body.firstTimeReset==false){
+  async resetPassword(@Body() ResetPasswordDto: ResetPasswordDto,@Request() req: any) {
+    if(ResetPasswordDto.firstTimeReset==false){
       const user = await this.usersService.getUserPass(req.cookies.mail);
-      const passwordMatch = await bcrypt.compare(body.oldPassword, user?.UserPassword);
+      const passwordMatch = await bcrypt.compare(ResetPasswordDto.oldPassword, user?.UserPassword);
       if (!passwordMatch) {
         throw new UnauthorizedException('Password did not match');
       }
     }
     
-    return this.usersService.updateUserPassword(req.cookies.mail, body.newPassword,req.user);
+    return this.usersService.updateUserPassword(req.cookies.mail, ResetPasswordDto.newPassword,req.user);
   }
 }

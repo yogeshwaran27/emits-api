@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import configurations from './config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { SalesforceModule } from './salesforce/salesforce.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { AuthModule } from './auth/auth.module';
     },
     }),
     UserModule,
-    AuthModule
+    AuthModule,
+    SalesforceModule
   ],
   controllers: [AppController],
   providers: [AppService],

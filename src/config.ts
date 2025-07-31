@@ -12,6 +12,9 @@ const configurations =  {
     DB_PORT:process.env.DB_PORT,
     JWT_CONSTANT:process.env.JWT_CONSTANT,
     FRONTEND_URL:process.env.FRONTEND_URL,
+    CLIENT_ID:process.env.CLIENT_ID,
+    CLIENT_SECRET:process.env.CLIENT_SECRET,
+    CLIENT_USER_NAME:process.env.CLIENT_USER_NAME
   };
 
 export default configurations;

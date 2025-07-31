@@ -33,7 +33,7 @@ export class AuthService {
     }
     const companyURL= await this.CompanyModel.findOne({ where: { CompanyId:user.dataValues.CompanyId } })
 
-    const payload = { sub: user.dataValues.UserId, username: user.dataValues.UserName, useremail: user.dataValues.EmailId, phone: user.dataValues.PhoneNumber, companyId: user.dataValues.CompanyId, UserType: user.dataValues.UserType };
+    const payload = { sub: user.dataValues.UserId, username: user.dataValues.UserName, useremail: user.dataValues.EmailId, phone: user.dataValues.PhoneNumber, companyId: user.dataValues.CompanyId, UserType: user.dataValues.UserType, UserId:user.dataValues.UserId };
     return {
       access_token: await this.jwtService.signAsync(payload),
       requiresPasswordReset: user.dataValues.ForcePasswordReset,
@@ -88,7 +88,8 @@ export class AuthService {
       phone: user.dataValues.PhoneNumber,
       companyId: user.dataValues.CompanyId,
       UserType: user.dataValues.UserType,
-      companyURL:companyURL?.dataValues.CompanyLogoUrl
+      companyURL:companyURL?.dataValues.CompanyLogoUrl,
+      UserId:user.dataValues.UserId
     };
 
     const access_token = await this.jwtService.signAsync(payload);
